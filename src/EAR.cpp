@@ -19,7 +19,7 @@
 
 #define BANNER "  ______                      _____  \n |  ____|         /\\         |  __ \\ \n | |__           /  \\        | |__) | \n |  __|         / /\\ \\       |  _  / \n | |____       / ____ \\      | | \\ \\ \n |______| (_) /_/    \\_\\ (_) |_|  \\_\\"
 #define PRODUCT "Evaluation of Acoustics using Ray-tracing"
-#define VERSION "0.1.3b"
+#define VERSION "0.1.4b"
 #define HEADER BANNER "\n " PRODUCT "\n version " VERSION
 
 #include <iostream>
@@ -52,10 +52,10 @@
 
 using boost::thread;
 
-int Render(std::string filename, int id) {
+int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* T60_Eyring=0) {
 	
 	// Init RNG, scene, and file input
-	gmtl::Math::seedRandom(id + 1000);
+	gmtl::Math::seedRandom((unsigned int) time(0));
 	Scene* scene = new Scene();
 	bool valid_file = Datatype::SetInput(filename);
 	if ( ! valid_file ) {
@@ -128,6 +128,9 @@ int Render(std::string filename, int id) {
 		int sf_id = 0;
 		for ( std::vector<AbstractSoundFile*>::const_iterator it = scene->sources.begin(); it != scene->sources.end(); ++ it ) {
 			for ( int band_id = 0; band_id < 3; ++ band_id ) {
+				// If we are only here to calculate the T60 reverberation time
+				// we are only going to render the mid frequency range.
+				if ( calc_T60 && band_id != 1 ) continue;
 				SoundFile* band = (*it)->Band(band_id);
 				WaveFile w;
 				w.FromFloat(band->data,band->sample_length);
@@ -136,6 +139,9 @@ int Render(std::string filename, int id) {
 				w.Save(ss.str().c_str());
 				delete band;
 			}
+			// If we are only here to calculate the T60 reverberation time
+			// we are only going to render the first sound file encountered.
+			if ( calc_T60 ) break;
 			sf_id ++;
 		}
 	}
@@ -153,13 +159,24 @@ int Render(std::string filename, int id) {
 	std::vector<SceneContext> scs;
 	for( unsigned int sound_id = 0; sound_id < scene->sources.size(); sound_id ++ ) {
 		AbstractSoundFile* sf = scene->sources[sound_id];
+		// This for loop iterates over all keyframes. If the scene contains a static
+		// configuration and no keyframes are present, keyframe_id is assigned -1.
 		for( int keyframe_id = keys?0:-1; keyframe_id < (int)(keys?keys->keys.size():0); keyframe_id ++ ) {
 			for( int band_id = 0; band_id < 3; band_id ++ ) {
+				// If we are only here to calculate the T60 reverberation time
+				// we are only going to render the mid frequency range.
+				if ( calc_T60 && band_id != 1 ) continue;
 				const float absorption_factor = 1.0f-absorption[band_id];
 				SceneContext s(scene,band_id,sound_id,num_samples,absorption_factor,dry_level,keyframe_id);
 				scs.push_back(s);
 			}
+			// If we are only here to calculate the T60 reverberation time
+			// we are only going to render the first keyframe.
+			if ( calc_T60 ) break;
 		}
+		// If we are only here to calculate the T60 reverberation time
+		// we are only going to render the first sound file encountered.
+		if ( calc_T60 ) break;
 	}
 
 	if ( max_threads > 0 )
@@ -180,7 +197,7 @@ int Render(std::string filename, int id) {
 
 	// Calculate max response
 	float max = 0.0f;
-	for( std::vector<SceneContext>::iterator it = scs.begin(); it != scs.end(); ++it ) {
+	for( std::vector<SceneContext>::const_iterator it = scs.begin(); it != scs.end(); ++it ) {
 		for ( std::vector<Recorder*>::const_iterator rit = it->recorders.begin(); rit != it->recorders.end(); ++ rit ) {
 			Recorder* r1 = *rit;
 			r1->Power(0.335f);
@@ -211,8 +228,49 @@ int Render(std::string filename, int id) {
 	}	
 
 	const bool noprocess = Settings::IsSet("noprocessing") && Settings::GetBool("noprocessing");
-	if ( noprocess ) {
+	if ( noprocess || calc_T60 ) {
 		std::cout << std::endl << "Not processing data" << std::endl;
+		
+		if ( calc_T60 ) {
+			
+			// If we are only here to calculate the T60 reverberation time the rendered result
+			// does not need to be convoluted. Instead, the T60 is determined based on the
+			// rendered impulse response, as well as by the two well-known formulas Sabine
+			// and Norris-Eyring. These deal with the prediction of reverberation time on a
+			// statistical level. For a 'conventional' setup, the T60 that is calculated from
+			// the impulse response should not deviate too much from the statistical prediction.
+
+			const SceneContext sc = *scs.begin();
+			const Recorder* rec = *sc.recorders.begin();
+			const RecorderTrack* track = *rec->tracks.begin();
+			*calc_T60 = track->T60();
+
+			const Mesh* mesh = scene->meshes[0];
+			const float V = mesh->Volume();
+			const float A = mesh->TotalAbsorption();
+			const float S = mesh->Area();
+			const float a = mesh->AverageAbsorption();
+			const float m = absorption[1];
+
+			// Sabine:
+			//     0.1611 V
+			// T = -------
+			//        A
+			//
+			// Norris-Eyring:
+			//     -0.1611 V 
+			// T = ---------
+			//     S ln(1-a)
+
+			if ( T60_Sabine )
+				*T60_Sabine = 0.1611f*V/A;
+			if ( T60_Eyring )
+				*T60_Eyring = -0.1611f*V/(S*log(1.0f-a));
+		}
+
+		Datatype::Dispose();
+		Keyframes::Dispose();
+		delete scene;
 		return 0;
 	}
 
@@ -306,24 +364,37 @@ int Render(std::string filename, int id) {
 int main(int argc, char** argv) {
 	std::cout << HEADER << std::endl << std::endl << std::endl;
 	std::cout << std::setprecision(3) << std::fixed;
-	int id = -1;
 	for ( int i = 0; i < argc; i ++ ) {
-		std::string s(argv[i]);
-		if ( s == "render" && ((i+1)<argc) ) {
-			std::string filename(argv[i+1]);
+		const std::string cmd(argv[i]);
+		const std::string arg1 = ((i+1)<argc) ? std::string(argv[i+1]) : "";
+		const std::string arg2 = ((i+2)<argc) ? std::string(argv[i+2]) : "";
+		if ( cmd == "render" && !arg1.empty() ) {
 			int ret_value = 1;
 			try {
-				ret_value = Render(filename,id);
+				ret_value = Render(arg1);
 			} catch ( std::exception& e ) {
 				std::cout << std::endl << "Error: " << e.what() << std::endl << std::endl;
 			}
 			std::cout << "Press a key to exit..." << std::endl;
 			std::cin.get();
 			return ret_value;
+		} else if ( cmd == "calc" && arg1 == "T60" && !arg2.empty() ) {
+			float T60_value, T60_sabine, T60_eyring;
+			int ret_value = 1;
+			try {
+				ret_value = Render(arg2,&T60_value,&T60_sabine,&T60_eyring);
+				std::cout << "T60_ear   : " << std::setprecision(9) << std::fixed << T60_value << "s" << std::endl;
+				std::cout << "T60_sabine: " << std::setprecision(9) << std::fixed << T60_sabine << "s" << std::endl;
+				std::cout << "T60_eyring: " << std::setprecision(9) << std::fixed << T60_eyring << "s" << std::endl;
+			} catch ( std::exception& e ) {
+				std::cout << std::endl << "Error: " << e.what() << std::endl << std::endl;				
+			}
+			return ret_value;
 		}
 	}
 	std::cout << "Usage:" << std::endl 
-		<< " EAR render <filename>" << std::endl;
+		<< " EAR render <filename>" << std::endl
+		<< " EAR calc T60 <filename>" << std::endl;
 }
 
 boost::mutex MonoRecorder::mutex;

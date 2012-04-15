@@ -42,6 +42,7 @@ class Mesh : public Datatype {
 private:
 	bool has_boundingbox;
 	float total_area;
+	float total_weighted_area;
 public:
 	std::vector<Triangle*> tris;
 	Material* material;
@@ -58,6 +59,22 @@ public:
 	static Mesh* Empty();
 	void Combine(Mesh* m);
 	void BoundingBox();
+	/// Returns the surface area of the mesh, useful for example to determine the T60
+	/// reverberation time using Sabine, Eyring or Millington-Sette.
+	float Area() const;
+	/// Returns the surface area of the mesh times the average absorption of the
+	/// surfaces, commonly called the Total Absorption measured in Sabins. Useful 
+	/// for example to determine the T60 reverberation time using Sabine, Eyring 
+	/// or Millington-Sette.
+	float TotalAbsorption() const;
+	/// Calculates the internal volume of the mesh. In case of a non-manifold or open
+	/// mesh, this function returns wrong results. For example to determine the T60
+	/// reverberation time using Sabine, Eyring or Millington-Sette.
+	float Volume() const;
+	/// Calculates the internal volume of the mesh. In case of a non-manifold or open
+	/// mesh, this function returns wrong results. For example to determine the T60
+	/// reverberation time using Sabine, Eyring or Millington-Sette.
+	float AverageAbsorption() const;
 };
 
 #endif

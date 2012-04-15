@@ -51,3 +51,17 @@ void Triangle::SamplePoint(gmtl::Point3f& P) {
 	const gmtl::Point3f& C = (*this)[2];
 	P = (1.0f - sr1) * A + (sr1 * (1.0f - r2)) * B + (sr1 * r2) * C;
 }
+
+float Triangle::SignedVolume() const {
+	// http://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up
+	const gmtl::Point3f& p1 = mVerts[0];
+	const gmtl::Point3f& p2 = mVerts[1];
+	const gmtl::Point3f& p3 = mVerts[2];
+	const float v321 = p3[0]*p2[1]*p1[2];
+    const float v231 = p2[0]*p3[1]*p1[2];
+    const float v312 = p3[0]*p1[1]*p2[2];
+    const float v132 = p1[0]*p3[1]*p2[2];
+    const float v213 = p2[0]*p1[1]*p3[2];
+    const float v123 = p1[0]*p2[1]*p3[2];
+    return (1.0f/6.0f)*(-v321 + v231 + v312 - v132 - v213 + v123);
+}

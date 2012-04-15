@@ -348,7 +348,9 @@ def export(filename):
                 num_recorders += 1
                 recorder_names.append(ob.name)
     fs.close()
-    
+
+def export_and_run(filename):
+    export(filename)
     # Now start rendering the file
     if sys.platform.startswith('win'):
         os.system('start /LOW EAR render "%s"'%filename)
@@ -364,7 +366,7 @@ class EAR_OP_Export(bpy.types.Operator):
     filter_glob = StringProperty(default="*.ear",options={'HIDDEN'})
 
     def execute(self, context): 
-        export(self.filepath)
+        export_and_run(self.filepath)
         return {'FINISHED'}
 
     def invoke(self, context, event):

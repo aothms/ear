@@ -124,7 +124,7 @@ void Scene::Render(int band, int sound, float absorbtion_factor, int num_samples
 		Material* mat = 0;
 		BounceType bt;		
 
-		for( int num_bounces = 0; num_bounces < 200; num_bounces ++ ) {
+		for( int num_bounces = 0; num_bounces < 500; num_bounces ++ ) {
 			surface_normal = 0;
 			mat = 0;
 			if ( ! sound_ray ) {
@@ -212,6 +212,8 @@ void Scene::Render(int band, int sound, float absorbtion_factor, int num_samples
 
 			}
 
+			// Arbitrary constant, ideally this would be determined based
+			// on some heuristics or previously collected samples.
 			if ( sample_intensity < 0.00000001 ) break;
 
 			previous_ray_direction = gmtl::makeNormal(sound_ray->mDir);
@@ -230,6 +232,9 @@ void Scene::Render(int band, int sound, float absorbtion_factor, int num_samples
 		rec->Multiply(1.0f / amount);
 
 		// The direct sound lobe is added...
+		// Ideally this lobe would be stored separately from the rest of the samples, it could then
+		// be subject of dopler-effect calculations for example and would ease the calculation of
+		// some of the statistical properties of the rendered impulse response.
 		if ( !currentSound->isMeshSource() ) {
 		const gmtl::Point3f listener_location = rec->getLocation(keyframeID);
 		gmtl::LineSegf* ls = Connect(&listener_location,sfloc);
@@ -254,5 +259,7 @@ Scene::~Scene() {
 	for ( std::vector<AbstractSoundFile*>::const_iterator it = sources.begin(); it != sources.end(); ++ it ) {
 		delete *it;
 	}
-	delete meshes[0];
+	for ( std::vector<Mesh*>::const_iterator it = meshes.begin(); it != meshes.end(); ++ it ) {
+		delete *it;
+	}
 }

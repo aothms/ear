@@ -200,6 +200,49 @@ public:
 			_this[i] += _other[i];
 		}
 	}
+	/// Returns the T60 reverberation time for the samples stored in this recorder track.
+	/// From http://en.wikipedia.org/wiki/Reverberation
+	/// T60 is the time required for reflections of a direct sound to decay by 60 dB below 
+	/// the level of the direct sound.
+	float T60() const {
+		const float attenuation_db = 60.0f;
+		const float attenuation_gain = powf(10.0f,attenuation_db/20.0f);
+
+		float direct_intensity = 0.0f;
+		float min_gain = 0.0f;
+		int last_significant_offset;
+		int direct_sound_offset;
+		
+		const RecorderTrack& _this = *this;	
+		
+		float previous_sample = -1.0f;
+		bool inside_indirect_lobe = false;
+		for ( unsigned int j = first_sample; j < real_length; ++ j ) {
+			const float sample = _this[j];
+			if ( inside_indirect_lobe ) {
+				if ( sample > min_gain ) {
+					last_significant_offset = j;
+				}
+			} else if ( sample < previous_sample ) {
+				// This is a rather silly way to determine the end of the direct sound
+				// field, for it may not even been present in this track and it is 
+				// explicitely calculated seperately from the reflections anyway in the
+				// rendering function, but this information is no longer available at
+				// this stage.
+				inside_indirect_lobe = true;
+				direct_intensity = previous_sample;
+				min_gain = direct_intensity / attenuation_gain;
+				direct_sound_offset = j;
+			}
+			previous_sample = sample;
+		}
+
+		const int reverberation_length = last_significant_offset - direct_sound_offset;
+		return (float)reverberation_length/44100.0f;
+	}
+	/// TODO: It would be great to implement other statistics as well. For example EDT
+	/// (Early Decay Time) & STI (Speach Transmission Index). The StereoRecorder class
+	/// could for example implement the IACC (Inter Aural Cross Correlation).
 };
 
 /// This class is the abstract base class for all classes of listeners. It defines

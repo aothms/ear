@@ -72,16 +72,19 @@ Mesh* Mesh::Empty() {
 
 Mesh::Mesh(bool from_file) {
 	total_area = 0;
+	total_weighted_area = 0;
 	if ( ! from_file ) return;
 	Read(false);
 	assertid("MESH");		
 	std::string m = ReadString();
 	material = materials[m];
+	const float absorption = 1.0f - material->absorption_coefficient[1];
 	while ( Datatype::PeakId() == "tri " ) {
 		Triangle* tri = new Triangle();
 		tri->m = material;
 		tris.push_back(tri);
 		total_area += tri->area;
+		total_weighted_area += tri->area * absorption;
 	}
 	has_boundingbox = false;
 	BoundingBox();
@@ -91,6 +94,8 @@ Mesh::Mesh(bool from_file) {
 	ss << Datatype::prefix << "Mesh \r\n" << indent << " +- faces: " << tris.size() << std::endl << indent << " +- material: '" << material->name << "'" << std::endl;
 	ss << indent << " +- bounds: (" << xmin << ", " << ymin << ", " << zmin << ") - (" << xmax << ", " << ymax << ", " << zmax << ")" << std::endl;
 	ss << indent << " +- surface area: " << total_area << std::endl;
+	ss << indent << " +- total absorption: " << total_weighted_area << std::endl;
+	ss << indent << " +- volume: " << Volume() << std::endl;
 	if ( indent.size() ) {
 		Datatype::stringblock = ss.str();
 	} else {
@@ -142,6 +147,28 @@ void Mesh::SamplePoint(gmtl::Point3f& p, gmtl::Vec3f& n) {
 			break;
 		}
 	}
+}
+
+float Mesh::Area() const {
+	return total_area;
+}
+
+float Mesh::TotalAbsorption() const {
+	return total_weighted_area;
+}
+
+float Mesh::Volume() const {
+	// http://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up
+	float volume = 0.0f;
+	std::vector<Triangle*>::const_iterator it;
+	for( it = tris.begin(); it != tris.end(); it ++ ) {
+		volume += (*it)->SignedVolume();
+	}
+	return volume;
+}
+
+float Mesh::AverageAbsorption() const {
+	return total_weighted_area / total_area;
 }
 
 std::map<std::string,Material*> Mesh::materials;

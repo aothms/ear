@@ -39,6 +39,7 @@ public:
 	Triangle(const gmtl::Point3f& a,const gmtl::Point3f& b,const gmtl::Point3f& c);
 	Triangle();
 	void SamplePoint(gmtl::Point3f& p);
+	float SignedVolume() const;
 };
 
 #endif
