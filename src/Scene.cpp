@@ -124,7 +124,7 @@ void Scene::Render(int band, int sound, float absorbtion_factor, int num_samples
 		Material* mat = 0;
 		BounceType bt;		
 
-		for( int num_bounces = 0; num_bounces < 500; num_bounces ++ ) {
+		for( int num_bounces = 0; num_bounces < 1000; num_bounces ++ ) {
 			surface_normal = 0;
 			mat = 0;
 			if ( ! sound_ray ) {

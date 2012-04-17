@@ -254,18 +254,18 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 
 			// Sabine:
 			//     0.1611 V
-			// T = -------
-			//        A
+			// T = --------
+			//      A + 4mV
 			//
 			// Norris-Eyring:
-			//     -0.1611 V 
-			// T = ---------
-			//     S ln(1-a)
+			//         0.1611 V 
+			// T = ----------------
+			//     -S ln(1-a) + 4mV
 
 			if ( T60_Sabine )
-				*T60_Sabine = 0.1611f*V/A;
+				*T60_Sabine = 0.1611f*V/(A+4.0f*m*V);
 			if ( T60_Eyring )
-				*T60_Eyring = -0.1611f*V/(S*log(1.0f-a));
+				*T60_Eyring = 0.1611f*V/(-S*log(1.0f-a)+4.0f*m*V);
 		}
 
 		Datatype::Dispose();
