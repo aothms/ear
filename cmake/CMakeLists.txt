@@ -1,23 +1,24 @@
 cmake_minimum_required (VERSION 2.6)
 project (EAR)
-
+ 
+# find_package(Threads)
+# set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS thread REQUIRED)
 
-IF(NOT CMAKE_BUILD_TYPE)
- 	SET(CMAKE_BUILD_TYPE "Release")
-	MESSAGE("Defaulting to release build")
-ELSE(NOT CMAKE_BUILD_TYPE)
-	ADD_DEFINITIONS("-g")
-ENDIF(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
+ 	set(CMAKE_BUILD_TYPE "Release")
+	message(STATUS "Defaulting to release build")
+endif(NOT CMAKE_BUILD_TYPE)
 
-FILE(GLOB ear_sources "../src/*.cpp")
+file(GLOB ear_sources "../src/*.cpp")
 
-SET(libs "../lib")
-SET(lib_sources "${libs}/wave/WaveFile.cpp" "${libs}/equalizer/Equalizer.cpp")
+set(libs "../lib")
+set(lib_sources "${libs}/wave/WaveFile.cpp" "${libs}/equalizer/Equalizer.cpp")
 
-INCLUDE_DIRECTORIES("${libs}/gmtl-0.6.1" "${libs}/wave" "${libs}/equalizer")
+include_directories("${libs}/wave" "${libs}/equalizer")
 
-ADD_EXECUTABLE(EAR ${ear_sources} ${lib_sources})
-TARGET_LINK_LIBRARIES (EAR ${Boost_THREAD_LIBRARY})
+add_executable(EAR ${ear_sources} ${lib_sources})
+target_link_libraries (EAR ${Boost_THREAD_LIBRARY})
+#target_link_libraries (EAR ${Boost_THREAD_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
-INSTALL(TARGETS EAR DESTINATION bin)
+install(TARGETS EAR DESTINATION bin)

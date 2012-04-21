@@ -207,12 +207,12 @@ gmtl::Rayf* AbstractSoundFile::SoundRay(int keyframeID) {
 		gmtl::Point3f p;
 		gmtl::Vec3f n,d;
 		mesh->SamplePoint(p,n);
-		Hemi(d,n);
+		Sample_Hemi(d,n);
 		return new gmtl::Rayf(p,d);			
 	} else {
 		gmtl::Point3f p = getLocation(keyframeID);
 		gmtl::Vec3f d;
-		Sphere(d);
+		Sample_Sphere(d);
 		return new gmtl::Rayf(p,d);
 	}
 }

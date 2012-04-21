@@ -6,19 +6,17 @@ E.A.R is an application that uses Ray-tracing to conceive an impression of the a
 
 Installation
 ------------
-If you're lucky grab a binary from the [downloads section](https://github.com/aothms/ear/downloads), but sadly for now only a Windows binary is provided. When you have downloaded and extracted the archive make sure you place the executable in a directory that is added to the PATH environment variable. Luckily E.A.R can quite easily be built from source and don't worry, other binaries will pop up shortly.
+Grab the Blender E.A.R add-on from the [downloads section](https://github.com/aothms/ear/downloads). The Blender E.A.R add-on allows you to model your scene, which will get rendered in an included binary application. The addon package comes with binaries for most operating systems, but you can also compile the binary yourself. If you have not installed a recent version of Blender on your system, this would be a good time to do so, please get it from the [Blender website](http://www.blender.org/download/get-blender/).
 
-Next download the Blender E.A.R add-on so that you can model your scene and render the acoustics in E.A.R. The add-on is also to be found in the [downloads section](https://github.com/aothms/ear/downloads). If you do not have installed a recent version of Blender on your system, this would be a good time to do so, please get it from the [Blender website](http://www.blender.org/download/get-blender/).
-
-Finally place the downloaded E.A.R add-on folder, which is named render_EAR in your Blender addons folder. Now you are good to go!
+Place the downloaded E.A.R Add-on, which is named render_EAR, in your Blender addons folder. Now you are good to go!
 
 Building E.A.R from source
 --------------------------
-This guide is directed at **Ubuntu** users, but with minor modifications the concepts apply to other *nix operating systems as well.
+This guide is directed at **Ubuntu** users, but with minor modifications the concepts apply to other *nix operating systems as well. Windows users can compile the binary using the included Visual Studio project.
 
-Install some prerequisites:
+Install some prerequisites (don't copy the dollar sign, it simply represents the prompt):
 
-    sudo apt-get install build-essential cmake libboost-thread-dev
+    $ sudo apt-get install build-essential cmake libboost-thread-dev
     
 Create a directory in your home folder for E.A.R:  
 
@@ -55,14 +53,15 @@ If everything went well, you should be issued the following welcome message
      | |____       / ____ \      | | \ \ 
      |______| (_) /_/    \_\ (_) |_|  \_\
      Evaluation of Acoustics using Ray-tracing
-     version 0.1.3b
+     version 0.1.4b
 
     Usage:
      EAR render <filename>
+     EAR calc T60 <filename>
      
 Using E.A.R
 -----------
-For directions to use ear, you are kindly directed to the two examples over at the [explauralisation](http://explauralisation.org/) website.
+For directions on how to use ear and some example output, you are kindly directed to the two examples over at the [explauralisation](http://explauralisation.org/) website.
 
 * [Example 1](http://explauralisation.org/example1/)
 * [Example 2](http://explauralisation.org/example2/)

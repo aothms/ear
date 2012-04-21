@@ -45,31 +45,31 @@
 /// Samples a vector on a sphere. The implementation used here is very
 /// inefficient. A point in a unit cube is sampled and discarded if
 /// it falls outside a sphere with radius one.
-inline void Sphere(gmtl::Vec3f& v) {
+inline void Sample_Sphere(gmtl::Vec3f& v) {
 	const float f1 = gmtl::Math::unitRandom() * 2.0f - 1.0f;
 	const float f2 = gmtl::Math::unitRandom() * 2.0f - 1.0f;
 	const float f3 = gmtl::Math::unitRandom() * 2.0f - 1.0f;
 	v = gmtl::Vec3f(f1,f2,f3);
 	const float l = gmtl::lengthSquared(v);
 	if ( l < 0.001f || l > 1.0f ) {
-		return Sphere(v);
+		return Sample_Sphere(v);
 	}
 	v /= sqrt(l);
 }
 /// Samples a vector on a hemisphere aligned by normal vector n, by
 /// first sampling a sphere and discarding the sample if the dot
 /// product with the normal vector is negative.
-inline void Hemi(gmtl::Vec3f& v, const gmtl::Vec3f& n) {
-	Sphere(v);
+inline void Sample_Hemi(gmtl::Vec3f& v, const gmtl::Vec3f& n) {
+	Sample_Sphere(v);
 	if ( gmtl::dot(n,v) < 0.0f ) {
-		return Hemi(v,n);
+		return Sample_Hemi(v,n);
 	}
 }
 /// Samples a vector on a hemisphere aligned by normal vector n, but
 /// factors in a reflection vector as well, to account for a specular
 /// reflection component.
-inline void Hemi(gmtl::Vec3f& v, const gmtl::Vec3f& surface_normal,const gmtl::Vec3f& reflection,float factor) {
-	Hemi(v,surface_normal);
+inline void Sample_Hemi(gmtl::Vec3f& v, const gmtl::Vec3f& surface_normal,const gmtl::Vec3f& reflection,float factor) {
+	Sample_Hemi(v,surface_normal);
 	v = v * (1.0f - factor) + reflection * factor;
 	gmtl::normalize(v);
 }

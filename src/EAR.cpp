@@ -146,6 +146,16 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 		}
 	}
 
+	if ( scene->sources.empty() ) {
+		std::cout << std::endl << "No sound sources defined" << std::endl << std::endl;
+		return 1;
+	}
+
+	if ( scene->listeners.empty() ) {
+		std::cout << std::endl << "No listeners defined" << std::endl << std::endl;
+		return 1;
+	}
+
 	if ( scene->meshes.empty() ) {
 		std::cout << std::endl << "Warning: no reflective geometry" << std::endl << std::endl;
 		scene->addMesh(Mesh::Empty());
@@ -390,6 +400,8 @@ int main(int argc, char** argv) {
 				std::cout << std::endl << "Error: " << e.what() << std::endl << std::endl;				
 			}
 			return ret_value;
+		} else if ( cmd == "test" ) {
+			return 0;
 		}
 	}
 	std::cout << "Usage:" << std::endl 

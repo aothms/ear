@@ -45,6 +45,8 @@ import wave
 import struct
 import os
 import sys
+import stat
+import inspect
 from math import sqrt
 from multiprocessing import cpu_count
 from collections import Iterable
@@ -130,6 +132,9 @@ def register_properties():
     bpy.types.Scene.num_samples = IntProperty(min=3,max=10,default=5)
     bpy.types.Scene.max_threads = IntProperty(min=0,max=1000,default=num_threads)
     bpy.types.Scene.debug_dir = StringProperty(name="Path", description="Directory for debug output", subtype='DIR_PATH')
+    bpy.types.Scene.ear_exec_path = StringProperty(name="Path", description="Path to the EAR executable", subtype='FILE_PATH')
+    
+    setup_exec_path()
 
 # Writes the scene to filename in the .EAR file format
 def export(filename):
@@ -349,13 +354,47 @@ def export(filename):
                 recorder_names.append(ob.name)
     fs.close()
 
-def export_and_run(filename):
+def setup_exec_path():
+    if run_test(): return
+    exec_path = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
+    exec_path = os.path.join(exec_path,"ear")
+    python_bits,alternative_bits = ('32','64') if sys.maxsize == 0x7fffffff else ('64','32')
+    exec_ext = '.exe' if sys.platform.startswith('win') else ''
+    if sys.platform.startswith('win'):
+        exec_path = os.path.join(exec_path,"win")
+    elif sys.platform == 'darwin':
+        exec_path = os.path.join(exec_path,"osx")
+    else:
+        exec_path = os.path.join(exec_path,"linux")
+    if os.path.exists(os.path.join(exec_path,python_bits)):
+        exec_path = os.path.join(exec_path,python_bits)
+    else:
+        exec_path = os.path.join(exec_path,alternative_bits)
+        print ("Trying %sbit binary, because %sbit is unavailable"%(alternative_bits,python_bits))
+    exec_path = os.path.join(exec_path,"EAR%s"%exec_ext)
+    if ( os.path.isfile(exec_path) and not os.access(exec_path, os.X_OK) ):
+        # Let's just hope we have the permission to do so
+        try: os.chmod(exec_path,stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # = 0o111
+        except: pass
+    bpy.context.scene.ear_exec_path = exec_path
+    if not run_test(): bpy.context.scene.ear_exec_path = ''
+    
+def get_exec_path():
+    scn = bpy.context.scene
+    path = normpath(abspath(scn.ear_exec_path))
+    return path if os.path.isfile(path) and os.access(path, os.X_OK) else 'EAR'
+    
+def run_test():    
+    return os.system('"%s" test'%get_exec_path()) == 0
+    
+def export_and_run(filename,exec_path='EAR'):
     export(filename)
     # Now start rendering the file
     if sys.platform.startswith('win'):
-        os.system('start /LOW EAR render "%s"'%filename)
+        os.system('start /LOW "E.A.R." "%s" render "%s"'%(exec_path,filename))
     else:
-        os.system('xterm -e EAR render "%s"'%filename)
+        xterm = '/usr/X11/bin/xterm' if sys.platform == 'darwin' else 'xterm'
+        os.system('%s -e "%s" render "%s" &'%(xterm,exec_path,filename))
 
 class EAR_OP_Export(bpy.types.Operator):
     bl_idname = "ear.export"
@@ -365,8 +404,11 @@ class EAR_OP_Export(bpy.types.Operator):
     filename_ext = ".ear"
     filter_glob = StringProperty(default="*.ear",options={'HIDDEN'})
 
-    def execute(self, context): 
-        export_and_run(self.filepath)
+    def execute(self, context):
+        if not run_test():
+            self.report({'ERROR'},'Unable to locate the EAR executable')
+        else:
+            export_and_run(self.filepath, get_exec_path())
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -533,6 +575,8 @@ class EAR_Panel_Render(bpy.types.Panel):
         layout = self.layout.row()
         layout.prop(rd,"max_threads","Threads")
         layout = self.layout.row()
+        layout.prop(rd,"ear_exec_path","Executable")
+        layout = self.layout.row(True)        
         layout.operator("EAR.export","Render audio","PLAY_AUDIO")
         
 def draw(g,p,r,s):
