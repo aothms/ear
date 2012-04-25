@@ -150,7 +150,7 @@ SoundFile* SoundFile::Band(int I) {
 }
 SoundFile* TripleBandSoundFile::Band(int I) {
 	const SoundFile* sf = soundfiles[I];
-	return new SoundFile(sf->data,sf->sample_length,sf->offset,false);
+	return new SoundFile(sf->data,sf->sample_length,offset,false);
 }
 SoundFile* SoundFile::Section(unsigned int start, unsigned int length) {
 	if ( start >= sample_length )
@@ -177,7 +177,7 @@ std::string SoundFile::toString() {
 		loc += "\r\n";
 	}
 	std::stringstream ss;
-	ss << "Sound source\r\n" << loc << " +- data: " << FileName(filename) << " [" << sample_length << " samples]\r\n";
+	ss << "Sound source\r\n" << loc << " +- data: " << FileName(filename) << " [" << sample_length << " samples]" << std::endl << " +- offset: " << offset << std::endl;
 	return ss.str();
 }
 std::string TripleBandSoundFile::toString() {
@@ -197,8 +197,9 @@ std::string TripleBandSoundFile::toString() {
 	std::stringstream ss;
 	ss << "Sound source\r\n" << loc;
 	for ( int i = 0; i < 3; ++ i ) {
-		ss << " +- data" << (i+1) << ": " << FileName(filename[i]) << " [" << soundfiles[i]->sample_length << " samples]\r\n";
+		ss << " +- data" << (i+1) << ": " << FileName(filename[i]) << " [" << soundfiles[i]->sample_length << " samples]" << std::endl;
 	}
+	ss << " +- offset: " << offset << std::endl;
 	return ss.str();
 }
 

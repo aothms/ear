@@ -84,6 +84,10 @@ def register_properties():
     bpy.types.Object.sine_decay_exponent = IntProperty(name="Decay E", default=1, min=0, max=16)
     bpy.types.Object.is_storyboard = BoolProperty()
     bpy.types.Object.is_stereo = BoolProperty()
+    bpy.types.Object.head_size = FloatProperty(min=0.0,max=10.0,default=0.2)
+    bpy.types.Object.head_ab_low = FloatProperty(min=0.0,max=1.0,default=0.1)
+    bpy.types.Object.head_ab_mid = FloatProperty(min=0.0,max=1.0,default=0.3)
+    bpy.types.Object.head_ab_high = FloatProperty(min=0.0,max=1.0,default=0.9)
     bpy.types.Object.is_listener = BoolProperty()
     bpy.types.Object.is_surface = BoolProperty()
     bpy.types.Object.is_portal = BoolProperty()
@@ -341,14 +345,21 @@ def export(filename):
                 channels = 2 if ob.is_stereo else 1
                 li = [normpath(abspath(ob.filename)),35.0,loc]
                 if ob.is_stereo:
-                    ears = []
-                    for fr in range(scn.frame_start,scn.frame_end+1,scn.frame_step):
-                        eul = ob.rotation_euler.copy()
-                        for crv in [c for c in crvs if c.data_path == 'rotation_euler']:
-                            eul[crv.array_index] = crv.evaluate(fr)
-                        ears.append(list(mathutils.Vector((1,0,0))*eul.to_matrix()))
-                    ear = packblock('anim',ears)
+                    if contains_animation:
+                        ears = []
+                        for fr in range(scn.frame_start,scn.frame_end+1,scn.frame_step):
+                            eul = ob.rotation_euler.copy()
+                            for crv in [c for c in crvs if c.data_path == 'rotation_euler']:
+                                eul[crv.array_index] = crv.evaluate(fr)
+                            ears.append(list(mathutils.Vector((1,0,0))*eul.to_matrix()))
+                        ear = packblock('anim',ears)
+                    else:
+                        eul = ob.rotation_euler
+                        right_ear = list(mathutils.Vector((1,0,0))*eul.to_matrix())
+                        ear = right_ear
                     li.append(ear)
+                    li.append(ob.head_size)
+                    li.append([ob.head_ab_low,ob.head_ab_mid,ob.head_ab_high])
                 writeblock('OUT%d'%channels,li)
                 num_recorders += 1
                 recorder_names.append(ob.name)
@@ -489,6 +500,14 @@ class EAR_Panel_Object(bpy.types.Panel):
                 layout.prop(ao,'is_listener','Listener')
                 if ao.is_listener:
                     layout.prop(ao,'is_stereo','Stereo')
+                    if ao.is_stereo:
+                        row = layout.row()
+                        row.prop(ao,"head_size","Head size")
+                        row = layout.row(True)
+                        row.label("Absorption")
+                        row.prop(ao,"head_ab_low","Low")
+                        row.prop(ao,"head_ab_mid","Mid")
+                        row.prop(ao,"head_ab_high","High")
                     layout.prop(ao,"filename","")
         elif ao.type == "MESH":
             if not (ao.is_portal or ao.is_emitter):

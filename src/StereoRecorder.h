@@ -41,6 +41,8 @@ class StereoRecorder : public Datatype, public Recorder {
 private:
 	gmtl::Point3f location;
 	gmtl::Vec3f right_ear;
+	gmtl::Vec3f head_absorption;
+	float head_size;
 	Animated<gmtl::Point3f>* animation;
 	Animated<gmtl::Vec3f>* right_ear_animation;
 public:	

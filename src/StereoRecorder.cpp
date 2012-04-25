@@ -49,7 +49,12 @@ StereoRecorder::StereoRecorder(bool fromFile) {
 		} else {
 			right_ear = ReadVec();
 			right_ear_animation = 0;
-		}		
+		}
+		head_size = ReadFloat();
+		head_absorption = ReadVec();
+		for ( unsigned int i = 0; i < 3; ++ i ) {
+			head_absorption[i] = std::max(0.0f,powf(1.0f-head_absorption[i],4));
+		}
 		std::cout << this->toString();
 	} else {
 		animation = 0;
@@ -69,6 +74,8 @@ Recorder* StereoRecorder::getBlankCopy(int secs) {
 	r->save_processed = save_processed;
 	r->right_ear = right_ear;
 	r->right_ear_animation = right_ear_animation;
+	r->head_size = head_size;
+	r->head_absorption = head_absorption;
 	return r;
 }
 bool StereoRecorder::Save(const std::string& fn, bool norm, float norm_max) {
@@ -89,10 +96,10 @@ inline void StereoRecorder::_Sample(int i, float v, int channel) {
 }
 void StereoRecorder::Record(const gmtl::Vec3f& dir, float a, float t, float dist, int band, int kf) {
 	const float dot = gmtl::dot(dir,getRightEar(kf));
-	const float head_size = 0.5f / 343.0f;
+	const float time_difference = head_size / 343.0f;
 
-	const int s_left  = (int) ((t-(dot*head_size))*44100.0);
-	const int s_right = (int) ((t+(dot*head_size))*44100.0);
+	const int s_right = (int) ((t-(dot*time_difference))*44100.0);
+	const int s_left = (int) ((t+(dot*time_difference))*44100.0);
 
 	const float width = sqrt(dist);
 	const float ampl = 2.0f * a / width;
@@ -100,13 +107,14 @@ void StereoRecorder::Record(const gmtl::Vec3f& dir, float a, float t, float dist
 	float ampl_left = ampl;
 	float ampl_right = ampl;
 
-	const float intensity_difference = std::min(0.5f,(float)fabs(dot));
+	const float intensity_difference = fabs(dot);
 
-	const float factor = pow(1.0f - intensity_difference,(float)band);
+	// Interaural intensity differences are higher for the high frequency bands
+	const float factor = powf(head_absorption[band],intensity_difference*head_size);
 	if ( dot < 0 ) {
-		ampl_left *= factor;
+		ampl_right *= factor*factor;
 	} else {
-		ampl_right *= factor;
+		ampl_left *= factor*factor;
 	}
 	
 	const int w = (int) ceil(width);
@@ -142,21 +150,22 @@ float StereoRecorder::getSegmentLength(int i) {
 	return animation->SegmentLength(i);
 }
 std::string StereoRecorder::toString() {
-	std::string loc;
-	std::string ear;
-	if ( this->isAnimated() ) {
-		loc = this->animation->toString();
-		ear = this->right_ear_animation->toString();
+	std::stringstream ss;
+	ss << std::setprecision(std::cout.precision()) << std::fixed;
+	ss << "Recorder" << std::endl << " +- stereo" << std::endl << " +- location: ";
+	if ( this->animation ) {
+		ss << this->animation->toString();
 	} else {
-		std::stringstream ss;
-		ss << std::setprecision(std::cout.precision()) << std::fixed;
 		ss << this->location;
-		loc = ss.str();
-		ss.clear();
-		ss << this->right_ear;
-		ear = ss.str();
 	}
-	return "Recorder\n +- stereo\n +- right: " + ear + "\n +- location: " + loc + "\n";
+	ss << std::endl << " +- right: ";
+	if ( this->right_ear_animation ) {
+		ss << this->right_ear_animation->toString();
+	} else {
+		ss << this->right_ear;
+	}
+	ss << std::endl << " +- head size: " << head_size << std::endl << " +- head absorption: " << head_absorption << std::endl;
+	return ss.str();
 }
 Animated<gmtl::Point3f>* StereoRecorder::getAnimationData() {
 	return animation;

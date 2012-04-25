@@ -60,10 +60,10 @@ gmtl::Rayf* Scene::Bounce(int band, gmtl::Rayf* sound_ray, gmtl::Vec3f*& surface
 			gmtl::Vec3f* n2 = new gmtl::Vec3f(-*surface_normal);
 			delete surface_normal;
 			surface_normal = n2;
-			Hemi(v, *surface_normal, sound_ray->mDir, spec);
+			Sample_Hemi(v, *surface_normal, sound_ray->mDir, spec);
 		} else {
 			gmtl::Vec3f refl = gmtl::reflect(refl, sound_ray->mDir, *surface_normal);
-			Hemi(v, *surface_normal, refl, spec);
+			Sample_Hemi(v, *surface_normal, refl, spec);
 		}
 
 		old_sound_ray = new gmtl::Rayf(*p,v);
