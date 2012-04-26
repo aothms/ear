@@ -59,9 +59,13 @@ bool Mesh::LineIntersection(gmtl::LineSegf* l) {
 	float u,v,t;
 	std::vector<Triangle*>::const_iterator ti;
 	for(ti=tris.begin(); ti!=tris.end(); ++ti){
-		if ( gmtl::intersectDoubleSided(**ti,*l,u,v,t) ) {
+		// intersectDoubleSided is only defined for the gmtl::Ray type, therefore
+		// we need to check ourselves if t is within (0,1], which is the parametric
+		// range for the gmtl::LineSeg type.
+		if ( gmtl::intersectDoubleSided(**ti,*l,u,v,t) && t > 1e-5f && t < 1.0f ) {
 			return true;
 		}
+
 	}
 	return false;
 }
