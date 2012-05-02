@@ -19,7 +19,7 @@
 
 #define BANNER "  ______                      _____  \n |  ____|         /\\         |  __ \\ \n | |__           /  \\        | |__) | \n |  __|         / /\\ \\       |  _  / \n | |____       / ____ \\      | | \\ \\ \n |______| (_) /_/    \\_\\ (_) |_|  \\_\\"
 #define PRODUCT "Evaluation of Acoustics using Ray-tracing"
-#define VERSION "0.1.5b"
+#define VERSION "0.1.6b"
 #define HEADER BANNER "\n " PRODUCT "\n version " VERSION
 
 #include <iostream>

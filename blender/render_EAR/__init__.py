@@ -218,11 +218,12 @@ def export(filename):
     if debug_dir != '.' and os.path.exists(debug_dir): settings.extend(['debugdir',debug_dir])
     writeblock('SET ',settings)
     
-    # A function to determines whether ob has suitable fcurves
+    # A function to determines whether ob has suitable fcurves or its parent object
     def is_animated(ob):
         return ob.animation_data and \
             ob.animation_data.action and \
-            len(ob.animation_data.action.fcurves)
+            len(ob.animation_data.action.fcurves) or \
+            (ob.parent and is_animated(ob.parent))
     
     # A check whether any object that is being exported is animated
     # If one of them is animated all other objects are threated as
@@ -247,6 +248,8 @@ def export(filename):
     num_sounds = 0
     num_recorders = 0
     recorder_names = []
+    
+    old_frame = scn.frame_current
     
     for ob in scn.objects:
         if ob.type == 'MESH':
@@ -296,13 +299,10 @@ def export(filename):
                         writeblock('MESH',[ob.data.materials[mi].name]+fa)
         elif ob.type == 'EMPTY':
             if contains_animation:
-                crvs = ob.animation_data.action.fcurves if is_animated(ob) else []
                 locs = []
                 for fr in range(scn.frame_start,scn.frame_end+1,scn.frame_step):
-                    loc = list(ob.location)
-                    for crv in [c for c in crvs if c.data_path == 'location']:
-                        loc[crv.array_index] = crv.evaluate(fr)
-                    locs.append(loc)
+                    scn.frame_set(fr)
+                    locs.append(list(ob.location))
                 loc = packblock('anim',locs)
             else: loc = list(ob.location)
             if ob.is_storyboard:
@@ -311,9 +311,8 @@ def export(filename):
                     new_locs = []
                     step_index = 0
                     for fr in range(scn.frame_start,scn.frame_end+1,scn.frame_step):
+                        scn.frame_set(fr)
                         step_loc = list(ob.location)
-                        for crv in [c for c in crvs if c.data_path == 'location']:
-                            step_loc[crv.array_index] = crv.evaluate(fr)
                         step_loc[2] = step_locs[step_index][2]
                         new_locs.append(step_loc)
                         step_index += 1
@@ -348,15 +347,17 @@ def export(filename):
                     if contains_animation:
                         ears = []
                         for fr in range(scn.frame_start,scn.frame_end+1,scn.frame_step):
-                            eul = ob.rotation_euler.copy()
-                            for crv in [c for c in crvs if c.data_path == 'rotation_euler']:
-                                eul[crv.array_index] = crv.evaluate(fr)
-                            ears.append(list(mathutils.Vector((1,0,0))*eul.to_matrix()))
+                            scn.frame_set(fr)
+                            mat = ob.matrix_world.to_3x3()
+                            vec = mat*mathutils.Vector((-1,0,0))
+                            vec.normalize()
+                            ears.append(list(vec))
                         ear = packblock('anim',ears)
                     else:
-                        eul = ob.rotation_euler
-                        right_ear = list(mathutils.Vector((1,0,0))*eul.to_matrix())
-                        ear = right_ear
+                        mat = ob.matrix_world.to_3x3()
+                        vec = mat*mathutils.Vector((-1,0,0))
+                        vec.normalize()
+                        ear = list(vec)
                     li.append(ear)
                     li.append(ob.head_size)
                     li.append([ob.head_ab_low,ob.head_ab_mid,ob.head_ab_high])
@@ -364,6 +365,8 @@ def export(filename):
                 num_recorders += 1
                 recorder_names.append(ob.name)
     fs.close()
+    
+    scn.frame_set(old_frame)
 
 def setup_exec_path():
     if run_test(): return

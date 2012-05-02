@@ -303,9 +303,10 @@ public:
 	/// The responses are interpolated with another recorder to suggest the
 	/// perception of movement from one location to the other.
 	void Process(SoundFile* const sf, Recorder* r, float offset, float length) {
-		for ( TrackIt it = tracks.begin(); it != tracks.end(); ++ it ) {
+		unsigned int track_id = 0;
+		for ( TrackIt it = tracks.begin(); it != tracks.end(); ++ it, ++ track_id ) {
 			SoundFile* section = sf->Section(offset,length);
-			processed_tracks.push_back((*it)->Process(r->tracks[0],section));
+			processed_tracks.push_back((*it)->Process(r->tracks[track_id],section));
 			delete section;
 		}
 		is_processed = true;
