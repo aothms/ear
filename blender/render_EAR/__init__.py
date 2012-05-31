@@ -165,9 +165,10 @@ def export(filename):
             s += b'tri '
             for f in d: s += pack(f)
         elif type(d) == type(''):
-            a = d + '\x00' * ( 4 - len(d) % 4 )
+            e = d.encode('utf8')
+            a = d + '\x00' * ( 4 - len(e) % 4 )
             s += b'str '
-            s += a.encode('ascii')
+            s += a.encode('utf8')
         elif type(d) == type(b''): return d
         else: raise ValueError(str(type(d)))
         return s
@@ -260,7 +261,13 @@ def export(filename):
                 # In case of reflecting surfaces meshes need to be separated by material index
                 mi_to_fa = {}
                 mis = range(len(ob.data.materials))
-                for f in ob.data.faces:
+                # Use the new tesselated faces api if available (2.63 and onwards)
+                if hasattr(ob.data,'tessfaces'):
+                    ob.data.update(calc_tessface=True)
+                    faces = ob.data.tessfaces
+                else: 
+                    faces = ob.data.faces
+                for f in faces:
                     mi = f.material_index
                     if mi in mis:
                         fvs = f.vertices
