@@ -139,7 +139,7 @@ std::string Datatype::ReadString() {
 	int length = 0;
 	char* temp = d->data;
 	int max_length = input_length + 4;
-	while ( *(temp++) && (max_length--) ) length ++;
+	while ( *(temp++) ) length ++;
 	std::string s = std::string(d->data,length);
 	delete d;
 	return s;

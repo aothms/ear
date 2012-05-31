@@ -26,6 +26,9 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
 
 #include "WaveFile.h"
 
@@ -52,7 +55,14 @@ WaveFile::~WaveFile()
 
 bool WaveFile::Load(const char* fn)
 {
-	FILE* file = fopen(fn, "rb");
+#ifdef _MSC_VER
+	int buffer_size = MultiByteToWideChar(CP_UTF8,0,fn,-1,0,0);
+	wchar_t* longname = new wchar_t[buffer_size];
+	MultiByteToWideChar(CP_UTF8,0,fn,-1,longname,buffer_size);
+	FILE* file = _wfopen(longname,TEXT("rb"));
+#else
+	FILE* file = open(fn,"rb");
+#endif
 	if (file) {
 		// Read .WAV descriptor
 		fread(&desc, sizeof(wavedescr), 1, file);
@@ -110,7 +120,14 @@ bool WaveFile::Load(const char* fn)
 
 bool WaveFile::Save(const char* fn)
 {
-	FILE* file = fopen(fn, "wb");
+#ifdef _MSC_VER
+	int buffer_size = MultiByteToWideChar(CP_UTF8,0,fn,-1,0,0);
+	wchar_t* longname = new wchar_t[buffer_size];
+	MultiByteToWideChar(CP_UTF8,0,fn,-1,longname,buffer_size);
+	FILE* file = _wfopen(longname,TEXT("wb"));
+#else
+	FILE* file = open(fn,"wb");
+#endif
 	if (file)
 	{
 		// Save .WAV descriptor

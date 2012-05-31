@@ -601,7 +601,7 @@ class EAR_Panel_Render(bpy.types.Panel):
         layout = self.layout.row(True)        
         layout.operator("EAR.export","Render audio","PLAY_AUDIO")
         
-def draw(g,p,r,s):
+def draw(g,p,r,s,sel=False):
     p = p.copy()
     p.resize_4d()
     m = s.region_3d.perspective_matrix
@@ -609,7 +609,8 @@ def draw(g,p,r,s):
     v = m * p
     v /= v.w
     x,y = w/2+v.x*w/2,h/2+v.y*h/2.0-20.0
-    bgl.glColor3f(0.0,0.0,0.0)
+    if sel: bgl.glColor3f(1.0,0.6667,0.25)
+    else: bgl.glColor3f(0.0,0.0,0.0)
     bgl.glBegin(bgl.GL_LINES)
     l = glyphs.glyphs.get(g,[])
     for p1,p2 in l:
@@ -624,12 +625,12 @@ def draw_callback_px(c,r,s):
             ob_location = mathutils.Vector([r[3] for r in ob.matrix_world[0:3]])
         else:
             ob_location = mathutils.Vector(ob.matrix_world[3][0:3])
-        if ob.is_emitter: draw('loudspeaker',ob_location,r,s)
+        if ob.is_emitter: draw('loudspeaker',ob_location,r,s,ob.select)
         else:
-            if ob.is_listener: draw('ear',ob_location,r,s)
+            if ob.is_listener: draw('ear',ob_location,r,s,ob.select)
             # Arbitrarily offset the position of the feet downwards
             # Ideally perform a ray_cast here to determine the actual offset downwards
-            if ob.is_storyboard: draw('feet',ob_location-mathutils.Vector((0,0,1.7)),r,s)
+            if ob.is_storyboard: draw('feet',ob_location-mathutils.Vector((0,0,1.7)),r,s,ob.select)
             
 region, handle = None, None
 
