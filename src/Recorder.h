@@ -36,6 +36,16 @@
 #define INITIAL_BUFFER_SIZE (3*SAMPLE_RATE)
 #define INCREMENTAL_BUFFER_SIZE (1*SAMPLE_RATE)
 
+/// Whether to use fftw to process the convolution in the frequency domain
+// #define USE_FFTW
+
+#ifdef USE_FFTW
+#ifdef _MSC_VER
+#define FFTW_DLL
+#endif
+#include <fftw3.h>
+#endif
+
 /// This class behaves as a dynamic array of floating point numbers.
 /// NOTE: The behaviour of this class differs whether it is a constant
 /// or non-constant copy. In case of a non-constant instance, the 
@@ -148,6 +158,105 @@ public:
 /// impulse response.
 class RecorderTrack : public FloatBuffer {
 public:
+#ifdef USE_FFTW
+	typedef enum { CONSTANT, FADE_IN, FADE_OUT } Fade;
+	/// Processes a sound file to include the response in the recorder track.
+	/// The response is not interpolated with a successive response.
+	/// A Fast Fourier Transform is used to transfer both the dry signal
+	/// and the impulse response to the frequency domain to reduce the
+	/// complexity (= speed up) of the convolution operation.
+	/// An additional argument specifies whether to optionally fade in
+	/// or fade out the input signal to help with the interpolation
+	/// of successive key-frames.
+	RecorderTrack* Process(SoundFile* const sound_file, Fade fade= CONSTANT ) const {
+		RecorderTrack* result = new RecorderTrack();
+		RecorderTrack& _result = *result;
+		const RecorderTrack& _this = *this;
+		const unsigned int M = this->getLength();
+		const unsigned int N = sound_file->sample_length;
+		const unsigned int MN = M+N+1;
+		const unsigned int MNh = MN/2+1;
+
+		float* a = (float*) fftwf_malloc(sizeof (float) * MN);
+		float* b = (float*) fftwf_malloc(sizeof (float) * MN);
+		float* c = (float*) fftwf_malloc(sizeof (float) * MN);
+		memset(a,0,sizeof(float)*MN);
+		memset(b,0,sizeof(float)*MN);
+		memset(c,0,sizeof(float)*MN);
+
+		memcpy(a,&_this[0],sizeof(float)*M);
+		memcpy(b,sound_file->data,sizeof(float)*N);
+
+		if ( fade != CONSTANT ) {
+			float factor = fade == FADE_OUT ? 1.0f : 0.0f;
+			float df = (fade == FADE_OUT ? -1.0f : 1.0f) / (float)sound_file->sample_length;
+			for ( unsigned int i = 0; i < sound_file->sample_length; ++ i ) {
+				b[i] *= factor;
+				factor += df;
+			}
+		}
+
+		fftwf_complex* A = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
+		fftwf_complex* B = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
+		fftwf_complex* C = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
+		memset(A,0,sizeof (fftwf_complex) * MNh);
+		memset(B,0,sizeof (fftwf_complex) * MNh);
+		memset(C,0,sizeof (fftwf_complex) * MNh);
+
+		fftwf_plan fft_plan1 = fftwf_plan_dft_r2c_1d(MN,a,A,FFTW_ESTIMATE);
+		fftwf_plan fft_plan2 = fftwf_plan_dft_r2c_1d(MN,b,B,FFTW_ESTIMATE);
+
+		fftwf_execute(fft_plan1);
+		fftwf_execute(fft_plan2);
+
+		float scale = 1.0f / (float)MN;
+		for ( unsigned int i = 0; i < MNh; ++ i ) {
+			C[i][0] = (A[i][0] * B[i][0] - A[i][1] * B[i][1]) * scale;
+			C[i][1] = (A[i][0] * B[i][1] + A[i][1] * B[i][0]) * scale;
+		}
+
+		fftwf_plan inv_fft_plan = fftwf_plan_dft_c2r_1d(MN,C,c,FFTW_ESTIMATE);
+
+		fftwf_execute(inv_fft_plan);
+
+		for ( unsigned int i = 0; i < MN; ++ i ) {
+			_result[i+sound_file->offset] = c[i];
+		}
+
+		fftwf_destroy_plan (fft_plan1);
+		fftwf_destroy_plan (fft_plan2);
+		fftwf_destroy_plan (inv_fft_plan);
+
+		fftwf_free(A);
+		fftwf_free(B);
+		fftwf_free(C);
+
+		fftwf_free(a);
+		fftwf_free(b);
+		fftwf_free(c);
+
+		return result;
+	}
+	/// Processes a sound file to include the response in the recorder track.
+	/// The response is interpolated with another response to suggest the
+	/// perception of movement from one location to the other.
+	/// A Fast Fourier Transform is used to transfer both the dry signal
+	/// and the impulse response to the frequency domain to reduce the
+	/// complexity (= speed up) of the convolution operation.
+	/// Contrary to the direct convolution mode, the FFT convolution mode
+	/// does not allow the impulse response to be linearly interpolated
+	/// hence the dry signal is faded in and out respectively before
+	/// convolution occurs with the impulse response.
+	RecorderTrack* Process(RecorderTrack* const other, SoundFile* const sound_file) const {
+		RecorderTrack* a = this->Process(sound_file, FADE_OUT);
+		RecorderTrack* b = other->Process(sound_file, FADE_IN);
+
+		a->Add(b);
+
+		delete b;
+		return a;
+	}
+#else
 	/// Processes a sound file to include the response in the recorder track.
 	/// The response is not interpolated with a successive response.
 	RecorderTrack* Process(SoundFile* const sound_file) const {
@@ -191,6 +300,7 @@ public:
 		}
 		return result;
 	}
+#endif
 	/// Linearly adds the data from the other recorder track to this one.
 	void Add(const RecorderTrack* other) {
 		FloatBuffer& _this = *this;

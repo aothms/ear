@@ -323,7 +323,16 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 	
 	if ( max_threads > 0 )
 		SetProgressBarSegments((int)ceil((float)rcs.size()/(float)max_threads));
-		
+
+#ifdef USE_FFTW
+	// The creation of fftw plans is not thread safe, therefore fft convolution occurs
+	// sequentially. Note that the actual execution of plans is thread safe, hence
+	// fft convolution could be sped up by separating creation and execution of plans
+	// or using a mutex somewhere in the RecorderTrack class.
+	for ( std::vector<RecorderContext>::iterator it = rcs.begin(); it != rcs.end(); ++ it ) {
+		(*it)();
+	}
+#else
 	{std::vector<RecorderContext>::const_iterator it = rcs.begin();
 	while( true ) {
 		boost::thread_group group;
@@ -336,8 +345,10 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 		if ( max_threads > 0 ) NextProgressBarSegment();
 		if ( it == rcs.end() ) break;
 	}}
+	std::cout << std::endl;
+#endif
 
-	std::cout << std::endl << "Merging result..." << std::endl;
+	std::cout << "Merging result..." << std::endl;
 
 	// Add buffers and save
 	int rec_id = 0;
