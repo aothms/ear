@@ -5,7 +5,7 @@ project (EAR)
 # set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS thread REQUIRED)
 
-find_file(fftw3_h "fftw3.ha")
+find_file(fftw3_h "fftw3.h")
 if(fftw3_h)
         add_definitions(-DUSE_FFTW)
         set(FFTW_LIB fftw3f)
