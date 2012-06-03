@@ -60,8 +60,9 @@ bool WaveFile::Load(const char* fn)
 	wchar_t* longname = new wchar_t[buffer_size];
 	MultiByteToWideChar(CP_UTF8,0,fn,-1,longname,buffer_size);
 	FILE* file = _wfopen(longname,TEXT("rb"));
+	delete[] longname;
 #else
-	FILE* file = open(fn,"rb");
+	FILE* file = fopen(fn,"rb");
 #endif
 	if (file) {
 		// Read .WAV descriptor
@@ -127,8 +128,9 @@ bool WaveFile::Save(const char* fn)
 	wchar_t* longname = new wchar_t[buffer_size];
 	MultiByteToWideChar(CP_UTF8,0,fn,-1,longname,buffer_size);
 	FILE* file = _wfopen(longname,TEXT("wb"));
+	delete[] longname;
 #else
-	FILE* file = open(fn,"wb");
+	FILE* file = fopen(fn,"wb");
 #endif
 	if (file)
 	{
