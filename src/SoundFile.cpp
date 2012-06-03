@@ -76,6 +76,9 @@ SoundFile::~SoundFile() {
 		delete[] data_low;
 		delete[] data_mid;
 		delete[] data_high;
+		delete[] soundfiles[0];
+		delete[] soundfiles[1];
+		delete[] soundfiles[2];
 	}
 }
 TripleBandSoundFile::TripleBandSoundFile() {

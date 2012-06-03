@@ -137,7 +137,8 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 				std::stringstream ss;
 				ss << debugdir << "sound-" << sf_id << ".band-" << band_id << lomihi[band_id] << ".wav";
 				w.Save(ss.str().c_str());
-				delete band;
+				// bands are now owned by the parent sound file so do not delete them
+				// delete band;
 			}
 			// If we are only here to calculate the T60 reverberation time
 			// we are only going to render the first sound file encountered.

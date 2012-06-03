@@ -37,7 +37,7 @@
 #define INCREMENTAL_BUFFER_SIZE (1*SAMPLE_RATE)
 
 /// Whether to use fftw to process the convolution in the frequency domain
-// #define USE_FFTW
+#define USE_FFTW
 
 #ifdef USE_FFTW
 #ifdef _MSC_VER
@@ -169,24 +169,26 @@ public:
 	/// or fade out the input signal to help with the interpolation
 	/// of successive key-frames.
 	RecorderTrack* Process(SoundFile* const sound_file, Fade fade= CONSTANT ) const {
-		RecorderTrack* result = new RecorderTrack();
-		RecorderTrack& _result = *result;
+		
 		const RecorderTrack& _this = *this;
 		const unsigned int M = this->getLength();
 		const unsigned int N = sound_file->sample_length;
 		const unsigned int MN = M+N+1;
 		const unsigned int MNh = MN/2+1;
 
-		float* a = (float*) fftwf_malloc(sizeof (float) * MN);
-		float* b = (float*) fftwf_malloc(sizeof (float) * MN);
-		float* c = (float*) fftwf_malloc(sizeof (float) * MN);
+		float* a = (float*) fftwf_malloc(sizeof (float) * MN);	
 		memset(a,0,sizeof(float)*MN);
-		memset(b,0,sizeof(float)*MN);
-		memset(c,0,sizeof(float)*MN);
-
 		memcpy(a,&_this[0],sizeof(float)*M);
-		memcpy(b,sound_file->data,sizeof(float)*N);
 
+		fftwf_complex* A = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
+		memset(A,0,sizeof (fftwf_complex) * MNh);
+		fftwf_plan fft_plan1 = fftwf_plan_dft_r2c_1d(MN,a,A,FFTW_ESTIMATE);
+		fftwf_execute(fft_plan1);
+		fftwf_free(a);
+
+		float* b = (float*) fftwf_malloc(sizeof (float) * MN);
+		memset(b,0,sizeof(float)*MN);
+		memcpy(b,sound_file->data,sizeof(float)*N);
 		if ( fade != CONSTANT ) {
 			float factor = fade == FADE_OUT ? 1.0f : 0.0f;
 			float df = (fade == FADE_OUT ? -1.0f : 1.0f) / (float)sound_file->sample_length;
@@ -195,45 +197,42 @@ public:
 				factor += df;
 			}
 		}
-
-		fftwf_complex* A = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
 		fftwf_complex* B = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
-		fftwf_complex* C = (fftwf_complex *) fftwf_malloc (sizeof (fftwf_complex) * MNh);
-		memset(A,0,sizeof (fftwf_complex) * MNh);
 		memset(B,0,sizeof (fftwf_complex) * MNh);
-		memset(C,0,sizeof (fftwf_complex) * MNh);
-
-		fftwf_plan fft_plan1 = fftwf_plan_dft_r2c_1d(MN,a,A,FFTW_ESTIMATE);
-		fftwf_plan fft_plan2 = fftwf_plan_dft_r2c_1d(MN,b,B,FFTW_ESTIMATE);
-
-		fftwf_execute(fft_plan1);
+		fftwf_plan fft_plan2 = fftwf_plan_dft_r2c_1d(MN,b,B,FFTW_ESTIMATE);	
 		fftwf_execute(fft_plan2);
+		fftwf_free(b);
 
 		float scale = 1.0f / (float)MN;
 		for ( unsigned int i = 0; i < MNh; ++ i ) {
-			C[i][0] = (A[i][0] * B[i][0] - A[i][1] * B[i][1]) * scale;
-			C[i][1] = (A[i][0] * B[i][1] + A[i][1] * B[i][0]) * scale;
+			float re = (A[i][0] * B[i][0] - A[i][1] * B[i][1]) * scale;
+			float im = (A[i][0] * B[i][1] + A[i][1] * B[i][0]) * scale;
+			A[i][0] = re;
+			A[i][1] = im;
 		}
 
-		fftwf_plan inv_fft_plan = fftwf_plan_dft_c2r_1d(MN,C,c,FFTW_ESTIMATE);
+		fftwf_free(B);
+
+		float* c = (float*) fftwf_malloc(sizeof (float) * MN);
+		memset(c,0,sizeof(float)*MN);
+		fftwf_plan inv_fft_plan = fftwf_plan_dft_c2r_1d(MN,A,c,FFTW_ESTIMATE);
 
 		fftwf_execute(inv_fft_plan);
+
+		fftwf_free(A);
+
+		RecorderTrack* result = new RecorderTrack();
+		RecorderTrack& _result = *result;
 
 		for ( unsigned int i = 0; i < MN; ++ i ) {
 			_result[i+sound_file->offset] = c[i];
 		}
 
+		fftwf_free(c);
+
 		fftwf_destroy_plan (fft_plan1);
 		fftwf_destroy_plan (fft_plan2);
-		fftwf_destroy_plan (inv_fft_plan);
-
-		fftwf_free(A);
-		fftwf_free(B);
-		fftwf_free(C);
-
-		fftwf_free(a);
-		fftwf_free(b);
-		fftwf_free(c);
+		fftwf_destroy_plan (inv_fft_plan);	
 
 		return result;
 	}
