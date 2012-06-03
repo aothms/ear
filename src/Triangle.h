@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -27,7 +27,7 @@
 
 /// A simple extention to the gmtl Trif class to also store the triangle
 /// area and normal and add a function to sample a point on the triangle
-/// using a uniform distribution, the latter is used when a mesh is used 
+/// using a uniform distribution, the latter is used when a mesh is used
 /// as an emitting surface for a sound source.
 class Triangle : public gmtl::Trif, public Datatype {
 private:

@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -83,7 +83,7 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 	int max_threads = Settings::IsSet("maxthreads") ?
 		Settings::GetInt("maxthreads") : -1;
 		
-	if ( max_threads < 1 ) max_threads = -1; 
+	if ( max_threads < 1 ) max_threads = -1;
 
 	std::string debugdir;
 	bool has_debugdir = false;
@@ -269,7 +269,7 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 			//      A + 4mV
 			//
 			// Norris-Eyring:
-			//         0.1611 V 
+			//         0.1611 V
 			// T = ----------------
 			//     -S ln(1-a) + 4mV
 
@@ -416,7 +416,7 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 	}
-	std::cout << "Usage:" << std::endl 
+	std::cout << "Usage:" << std::endl
 		<< " EAR render <filename>" << std::endl
 		<< " EAR calc T60 <filename>" << std::endl;
 }

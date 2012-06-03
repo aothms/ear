@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NoInherit)"
+				AdditionalDependencies="libfftw3f-3.lib $(NoInherit)"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -120,7 +120,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="USE_FFTW;WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -137,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NoInherit)"
+				AdditionalDependencies="libfftw3f-3.lib $(NoInherit)"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				LinkTimeCodeGeneration="1"
@@ -219,6 +219,10 @@
 			</File>
 			<File
 				RelativePath="..\src\MonoRecorder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\Recorder.cpp"
 				>
 			</File>
 			<File

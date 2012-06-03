@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -80,7 +80,7 @@ public:
 			frames.push_back(Datatype::ReadTriplet<T>());
 			// 7 * 4 bytes are read for the datatype
 			// |vec3|flt4|xxxx|flt4|xxxx|flt4|xxxx|
-			l -= 7 * 4; 
+			l -= 7 * 4;
 		}
 		if ( frames.size() != keys->keys.size() ) {
 			throw DatatypeException("Keyframe count does not match");

@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -35,7 +35,7 @@ bool Split(const std::string& str, std::string& a, std::string& b) {
 	std::string::size_type pos = str.find_first_of(delimiters);
 	if ( pos == std::string::npos ) return false;
 	a = str.substr(0,pos);
-	b = str.substr(pos+1);  
+	b = str.substr(pos+1);
 	return true;
 }
 
@@ -63,7 +63,7 @@ void DrawProgressBar(const int& done, const int& total) {
 	if ( ! (done % progress_update_interval) ) {
 		boost::mutex::scoped_lock lock(cout_mutex);
 		std::cout << "\r[";
-		for ( int _x = 0; _x < total - progress_update_interval; _x += progress_update_interval ) 
+		for ( int _x = 0; _x < total - progress_update_interval; _x += progress_update_interval )
 			std::cout << ((nsegments*_x<done+segment*total) ? "=" : " ");
 		std::cout << "]" << std::flush;
 	}

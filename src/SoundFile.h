@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -20,7 +20,7 @@
 #ifndef SOUNDFILE_H
 #define SOUNDFILE_H
 
-#include <gmtl/Point.h> 
+#include <gmtl/Point.h>
 
 #include "../lib/wave/WaveFile.h"
 

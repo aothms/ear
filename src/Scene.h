@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -35,7 +35,7 @@
 #include "Distributions.h"
 
 /// This class encapsulates all datatypes in the .EAR file format and provides
-/// methods to tracing the rays from the sound sources bouncing off of the 
+/// methods to tracing the rays from the sound sources bouncing off of the
 /// meshes into the recorders. Ideally this class would also create a reference
 /// to some sort of grid acceleration structure to speed up the triangle-ray
 /// intersection tests, but this is currently not the case.
@@ -52,7 +52,7 @@ private:
 	/// Sees whether there is a free line of sight between the point p and point x.
 	/// This is done by testing all triangles in the scene for intersection with the
 	/// line segment between p and x until an intersection is found. So this is a
-	/// timeconsuming operation that could be sped up by using a grid acceleration 
+	/// timeconsuming operation that could be sped up by using a grid acceleration
 	/// structure
 	inline gmtl::LineSegf* Connect(const gmtl::Point3f* p, const gmtl::Point3f& x);
 public:

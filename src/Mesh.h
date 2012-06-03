@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -63,8 +63,8 @@ public:
 	/// reverberation time using Sabine, Eyring or Millington-Sette.
 	float Area() const;
 	/// Returns the surface area of the mesh times the average absorption of the
-	/// surfaces, commonly called the Total Absorption measured in Sabins. Useful 
-	/// for example to determine the T60 reverberation time using Sabine, Eyring 
+	/// surfaces, commonly called the Total Absorption measured in Sabins. Useful
+	/// for example to determine the T60 reverberation time using Sabine, Eyring
 	/// or Millington-Sette.
 	float TotalAbsorption() const;
 	/// Calculates the internal volume of the mesh. In case of a non-manifold or open

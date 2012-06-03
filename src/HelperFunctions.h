@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -35,7 +35,7 @@ std::string DirName(const std::string& str);
 /// Returns the filename of a path
 std::string FileName(const std::string& str);
 
-/// Sets the number of segments for the progress bar in case the maximum 
+/// Sets the number of segments for the progress bar in case the maximum
 /// number of threads is larger than the pool of tasks
 void SetProgressBarSegments(int n);
 /// Signals work on the first batch of tasks is done and moves to the next

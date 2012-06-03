@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -48,7 +48,7 @@ struct readpos {
 	int input_length;
 };
 
-/// The is the global class for all datatypes that can be serialized to the 
+/// The is the global class for all datatypes that can be serialized to the
 /// .EAR file format. The class reads all binary data from the file and can
 /// then be sequentially queried for the different blocks it contains.
 class Datatype {

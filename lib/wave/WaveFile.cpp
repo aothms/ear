@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -65,40 +65,42 @@ bool WaveFile::Load(const char* fn)
 #endif
 	if (file) {
 		// Read .WAV descriptor
-		fread(&desc, sizeof(wavedescr), 1, file);
+		bool read_success = fread(&desc, sizeof(wavedescr), 1, file) == 1;
 
 		// Check for valid .WAV file
-		if (strncmp(desc.wave, "WAVE", 4) == 0)
+		if (read_success && strncmp(desc.wave, "WAVE", 4) == 0)
 		{
 			// Read .WAV format
-			fread(&fmt, sizeof(wavefmt), 1, file);
+			read_success = fread(&fmt, sizeof(wavefmt), 1, file) == 1;
 
 			// Check for valid .WAV file
-			if ((strncmp(fmt.id, "fmt", 3) == 0) && (fmt.format == 1))
+			if (read_success && (strncmp(fmt.id, "fmt", 3) == 0) && (fmt.format == 1))
 			{
 				// Read next chunk
 				char id[4];
 				unsigned int block_size;
-				fread(id, 1, 4, file);
-				fread(&block_size, 4, 1, file);
+				read_success = fread(id, 1, 4, file) == 4 &&
+				fread(&block_size, 4, 1, file) == 1;
 				unsigned int offset = ftell(file);
 
 				// Read .WAV data
-				while (offset < desc.size)
+				while (read_success && (offset < desc.size))
 				{
 					// Check for .WAV data chunk
 					if (strncmp(id, "data", 4) == 0)
 					{
 						data = (char*)realloc(data, (size+block_size));
-						fread(data+size, 1, block_size, file);
+						read_success = fread(data+size, 1, block_size, file) == block_size;
 						size += block_size;
 					} else {
-						fseek(file,block_size,SEEK_CUR);
+						read_success = fseek(file,block_size,SEEK_CUR) == 0;
 					}
 
+					if ( !read_success ) break;
+
 					// Read next chunk
-					fread(id, 1, 4, file);
-					fread(&size, 4, 1, file);
+					read_success = fread(id, 1, 4, file) == 4 &&
+					fread(&size, 4, 1, file) == 1;
 					offset = ftell(file);
 				}
 			}

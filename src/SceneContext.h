@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -38,8 +38,8 @@ public:
 			recorders.push_back((*it)->getBlankCopy(4));
 		}
 	}
-	SceneContext(Scene* scn,int b,int sf, int s, float ab, float dr, int kf=-1) : 
-			scene(scn), band(b), soundfile_id(sf), keyframe_id(kf), 
+	SceneContext(Scene* scn,int b,int sf, int s, float ab, float dr, int kf=-1) :
+			scene(scn), band(b), soundfile_id(sf), keyframe_id(kf),
 			samples(s), absorption(ab), dry_level(dr) {
 		assignRecorders(scn);
 	}
@@ -54,7 +54,7 @@ public:
 };
 
 /// This class holds all data that is needed to convolute a sound file by
-/// an impulse response. The class is executable and can therefore be used 
+/// an impulse response. The class is executable and can therefore be used
 /// as a context for a thread.
 class RecorderContext {
 public:

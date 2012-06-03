@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by *
  * the Free Software Foundation, either version 3 of the License, or    *
  * (at your option) any later version.                                  *
- *                                                                      * 
+ *                                                                      *
  * EAR is distributed in the hope that it will be useful,               *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
@@ -32,7 +32,7 @@ Datatype::Datatype() {
 		data += 4;
 	}	
 	char* aid = (char*)id;
-	if ( !scanning && Settings::GetBool("debug") ) 
+	if ( !scanning && Settings::GetBool("debug") )
 		std::cout << "Reading '" << aid[0] << aid[1] << aid[2] << aid[3] << "' block of " << *length << " bytes" << std::endl;
 }
 void Datatype::assertid(const char* c) {
