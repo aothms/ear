@@ -41,6 +41,8 @@ SoundFile::SoundFile() {
 	if ( !data || !sample_length ) {
 		throw DatatypeException("Failed to open sound file " + filename);
 	}
+	soundfiles[0] = soundfiles[1] = soundfiles[2] = 0;
+	data_low = data_mid = data_high = 0;
 	mesh = 0;
 	animation = 0;
 	if ( Datatype::PeakId() == "anim" ) {
@@ -71,6 +73,9 @@ SoundFile::~SoundFile() {
 		delete mesh;
 		delete animation;
 		delete[] data;
+		delete[] data_low;
+		delete[] data_mid;
+		delete[] data_high;
 	}
 }
 TripleBandSoundFile::TripleBandSoundFile() {
@@ -137,16 +142,16 @@ gmtl::Point3f AbstractSoundFile::getLocation(int i) {
 	}
 }
 SoundFile* SoundFile::Band(int I) {
-	EQSTATE es;
-	init_3band_state(&es,(int) (f1*1000),(int) (f2*1000),(int) (f3*1000));
-	es.lg = (I==0)?1.0:0.0;
-	es.mg = (I==1)?1.0:0.0;
-	es.hg = (I==2)?1.0:0.0;
-	float* out = new float[sample_length];
-	for ( unsigned int i = 0; i < sample_length; i ++ ) {
-		out[i] = (float) do_3band(&es,data[i]);
+	if ( !soundfiles[0] ) {
+		data_low = new float[sample_length];
+		data_mid = new float[sample_length];
+		data_high = new float[sample_length];
+		Equalizer::Split(data,data_low,data_mid,data_high,sample_length,f1*1000.0f,f2*1000.0f,f3*1000.0f);
+		soundfiles[0] = new SoundFile(data_low,sample_length,0,false);
+		soundfiles[1] = new SoundFile(data_mid,sample_length,0,false);
+		soundfiles[2] = new SoundFile(data_high,sample_length,0,false);
 	}
-	return new SoundFile(out,sample_length,offset,true);
+	return soundfiles[I];
 }
 SoundFile* TripleBandSoundFile::Band(int I) {
 	const SoundFile* sf = soundfiles[I];

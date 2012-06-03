@@ -23,7 +23,6 @@
 #include <gmtl/Point.h> 
 
 #include "../lib/wave/WaveFile.h"
-#include "../lib/equalizer/Equalizer.h"
 
 #include "Mesh.h"
 #include "Animated.h"
@@ -40,8 +39,9 @@ protected:
 	Mesh* mesh;
 	float gain;
 	bool sample_owner;
+	SoundFile* soundfiles[3];
 public:
-	float* data;
+	float *data, *data_low, *data_mid, *data_high;
 	unsigned int sample_length;
 	unsigned int offset;
 	
@@ -95,7 +95,6 @@ public:
 /// does not need to be used.
 class TripleBandSoundFile : public AbstractSoundFile {
 private:
-	SoundFile* soundfiles[3];
 	std::string filename[3];
 public:
 	TripleBandSoundFile();

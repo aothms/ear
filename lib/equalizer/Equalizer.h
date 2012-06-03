@@ -1,74 +1,51 @@
-//---------------------------------------------------------------------------
-//
-//                                3 Band EQ :)
-//
-// EQ.H - Header file for 3 band EQ
-//
-// (c) Neil C / Etanza Systems / 2K6
-//
-// Shouts / Loves / Moans = etanza at lycos dot co dot uk
-//
-// This work is hereby placed in the public domain for all purposes, including
-// use in commercial applications.
-//
-// The author assumes NO RESPONSIBILITY for any problems caused by the use of
-// this software.
-//
-//----------------------------------------------------------------------------
+/************************************************************************
+ *                                                                      *
+ * This file is part of EAR: Evaluation of Acoustics using Ray-tracing. *
+ *                                                                      *
+ * EAR is free software: you can redistribute it and/or modify          *
+ * it under the terms of the GNU General Public License as published by *
+ * the Free Software Foundation, either version 3 of the License, or    *
+ * (at your option) any later version.                                  *
+ *                                                                      * 
+ * EAR is distributed in the hope that it will be useful,               *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of       *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
+ * GNU General Public License for more details.                         *
+ *                                                                      *
+ * You should have received a copy of the GNU General Public License    *
+ * along with EAR.  If not, see <http://www.gnu.org/licenses/>.         *
+ *                                                                      *
+ ************************************************************************/
 
-#ifndef __EQ3BAND__
-#define __EQ3BAND__
+// 4th order Linkwitz-Riley filter, adapted from:
+// http://www.musicdsp.org/archive.php?classid=3#266
 
+#ifndef EQUALIZER_H
+#define EQUALIZER_H
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
+class Equalizer {
+private:
+	class Pass {
+	protected:
+		float b1, b2, b3, b4;
+		float a0, a1, a2, a3, a4;
+		float xm1, xm2, xm3, xm4;
+		float ym1, ym2, ym3, ym4;
+		float wc4, k4, a_tmp;
+		Pass(float fc);
+	public:
+		void Process(const float in, float &out);
+	};
+	class LowPass : public Pass {
+	public:
+		LowPass(float fc);
+	};
+	class HighPass : public Pass {
+	public:
+		HighPass(float fc);
+	};
+public:
+	static void Split(float* data, float* low, float* mid, float* high, unsigned int length, float f1, float f2, float f3);
+};
+
 #endif
-
-// ------------
-//| Structures |
-// ------------
-
-typedef struct
-{
-  // Filter #1 (Low band)
-
-  double  lf;       // Frequency
-  double  f1p0;     // Poles ...
-  double  f1p1;    
-  double  f1p2;
-  double  f1p3;
-
-  // Filter #2 (High band)
-
-  double  hf;       // Frequency
-  double  f2p0;     // Poles ...
-  double  f2p1;
-  double  f2p2;
-  double  f2p3;
-
-  // Sample history buffer
-
-  double  sdm1;     // Sample data minus 1
-  double  sdm2;     //                   2
-  double  sdm3;     //                   3
-
-  // Gain Controls
-
-  double  lg;       // low  gain
-  double  mg;       // mid  gain
-  double  hg;       // high gain
-  
-} EQSTATE;  
-
-
-// ---------
-//| Exports |
-// ---------
-
-extern void   init_3band_state(EQSTATE* es, int lowfreq, int highfreq, int mixfreq);
-extern double do_3band(EQSTATE* es, double sample);
-
-
-#endif // #ifndef __EQ3BAND__
-
-//---------------------------------------------------------------------------
