@@ -135,7 +135,8 @@ bool WaveFile::Save(const char* fn)
 	if (file)
 	{
 		// Save .WAV descriptor
-		desc.size = size;
+		// The size of the data buffer plus some header bytes
+		desc.size = size + 36;
 		fwrite(&desc, sizeof(wavedescr), 1, file);
 
 		// Save .WAV format
@@ -244,7 +245,7 @@ bool WaveFile::FromFloat(const float* left, const float* right, int length1, int
 	memcpy(desc.wave,"WAVE",4);
 	fmt.bitsPerSample = 16;
 	fmt.blockAlign = 4;
-	fmt.byteRate = 88200;
+	fmt.byteRate = 176400;
 	fmt.channels = 2;
 	fmt.format = 1;
 	memcpy(fmt.id,"fmt ",4);
