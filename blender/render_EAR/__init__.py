@@ -395,7 +395,10 @@ def setup_exec_path():
     exec_path = os.path.join(exec_path,"EAR%s"%exec_ext)
     if ( os.path.isfile(exec_path) and not os.access(exec_path, os.X_OK) ):
         # Let's just hope we have the permission to do so
-        try: os.chmod(exec_path,stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # = 0o111
+        try:
+            mode = os.stat(exec_path).st_mode
+            mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH # = 0o111
+            os.chmod(exec_path,mode)
         except: pass
     bpy.context.scene.ear_exec_path = exec_path
     if not run_test(): bpy.context.scene.ear_exec_path = ''
