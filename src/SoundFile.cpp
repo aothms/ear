@@ -129,6 +129,8 @@ SoundFile::SoundFile(float* d,int length, unsigned int o, bool is_owner) {
 	offset = o;
 	mesh = 0;
 	animation = 0;
+  data_low = data_mid = data_high = 0;
+  soundfiles[0] = soundfiles[1] = soundfiles[2] = 0;
 }
 void AbstractSoundFile::setLocation(gmtl::Point3f p) {
 	location = p;
@@ -157,8 +159,7 @@ SoundFile* SoundFile::Band(int I) {
 	return soundfiles[I];
 }
 SoundFile* TripleBandSoundFile::Band(int I) {
-	const SoundFile* sf = soundfiles[I];
-	return new SoundFile(sf->data,sf->sample_length,offset,false);
+  return soundfiles[I];
 }
 SoundFile* SoundFile::Section(unsigned int start, unsigned int length) {
 	if ( start >= sample_length )
@@ -236,6 +237,6 @@ void SoundFile::SetEqBands(float F1, float F2, float F3) {
 
 float AbstractSoundFile::getGain() { return gain; }
 
-float SoundFile::f1 =  0.3f;
-float SoundFile::f2 =  2.0f;
-float SoundFile::f3 = 16.0f;
+float SoundFile::f1 =  0.2f;
+float SoundFile::f2 =  1.0f;
+float SoundFile::f3 =  2.0f;

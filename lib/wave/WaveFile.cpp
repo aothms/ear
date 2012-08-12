@@ -195,7 +195,8 @@ bool WaveFile::FromFloat(const float* f, int length, bool norm, float max) {
 		if ( max < 0 ) {
 			max = -1e9;
 			for (long i=0; i<length; i++) {
-				if ( f[i] > max ) max = f[i];
+				const float fi = fabs(f[i]);
+				if ( fi > max ) max = fi;
 			}
 			max /= 0.8f;
 		} else {

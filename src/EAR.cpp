@@ -231,8 +231,13 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 				const int sf_id = it->soundfile_id;
 				const int band_id = it->band;
 				const int kf_id = it->keyframe_id;
-				ss << debugdir << "response-" << rec_id << ".sound-" << sf_id << ".frame-" << std::setw(2) << std::setfill('0') << kf_id << ".band-" << band_id << lomihi[band_id] << ".wav";
-				r1->Save(ss.str(),true,max);
+				ss << debugdir << "response-" << rec_id << ".sound-" << sf_id;
+				if ( kf_id != -1 ) {
+					ss << ".frame-" << std::setw(2) << std::setfill('0') << kf_id;
+				}
+				ss << ".band-" << band_id << lomihi[band_id];
+				r1->Save(ss.str() + ".wav",true,max);
+				r1->tracks[0]->Write(ss.str() + ".bin");
 			}
 			rec_id ++;
 		}
@@ -363,7 +368,11 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 			other->save_processed = true;
 			if ( has_debugdir ) {
 				std::stringstream ss;
-				ss << debugdir << "rec-" << rec_id << ".sound-" << sc.soundfile_id << ".frame-" << std::setw(2) << std::setfill('0') << sc.keyframe_id << ".band-" << sc.band << ".wav";
+				ss << debugdir << "rec-" << rec_id << ".sound-" << sc.soundfile_id;
+				if (sc.keyframe_id != -1) {
+					ss << ".frame-" << std::setw(2) << std::setfill('0') << sc.keyframe_id;
+				}
+				ss << ".band-" << sc.band << ".wav";
 				other->Save(ss.str());
 			}
 			total->Add(other);
@@ -386,7 +395,7 @@ int Render(std::string filename, float* calc_T60=0, float* T60_Sabine=0, float* 
 int main(int argc, char** argv) {
 	std::cout << HEADER << std::endl << std::endl << std::endl;
 	std::cout << std::setprecision(3) << std::fixed;
-	for ( int i = 0; i < argc; i ++ ) {
+	for ( int i = 1; i < argc; i ++ ) {
 		const std::string cmd(argv[i]);
 		const std::string arg1 = ((i+1)<argc) ? std::string(argv[i+1]) : "";
 		const std::string arg2 = ((i+2)<argc) ? std::string(argv[i+2]) : "";

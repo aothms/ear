@@ -23,6 +23,7 @@
 #include "Settings.h"
 
 Datatype::Datatype() {
+  if ( ! input ) return;
 	id = (int*)input;
 	data = input + 4;
 	if ( isInt() || isFloat() || isVec() || isString() || isTri() ) {

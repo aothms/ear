@@ -30,7 +30,8 @@
 #include "Animated.h"
 #include "SoundFile.h"
 
-void FloatBuffer::resizeArray(const int l) {
+void FloatBuffer::resizeArray(const unsigned int l) {
+  if ( l <= length ) return;
 	const float* old_data = data;
 	data = new float[l];
 	memcpy(data,old_data,length*sizeof(data[0]));
@@ -101,7 +102,8 @@ void FloatBuffer::Truncate(unsigned int l) {
 
 void FloatBuffer::Power(float a) {
 	for ( unsigned int i = first_sample; i < real_length; i ++ ) {
-		data[i] = pow(data[i],a);
+		const float f = pow(abs(data[i]),a);
+		data[i] = data[i] < 0 ? (f*-1.0f) : f;
 	}
 }
 
@@ -110,9 +112,25 @@ unsigned int FloatBuffer::getLength(float tresh) const {
 		return real_length;
 	unsigned int max = 0;
 	for ( unsigned int i = first_sample; i < length; ++ i ) {
-		if ( data[i] >= tresh ) max = i;
+		if ( abs(data[i]) >= tresh ) max = i;
 	}
 	return max + 1;
+}
+
+void FloatBuffer::Write(const std::string& fn) const {
+  std::ofstream f(fn.c_str(),std::ios_base::binary);
+	f.write((char*)data,sizeof(float)*(real_length+1));	
+}
+
+void FloatBuffer::Read(const std::string& fn) {
+  std::ifstream f(fn.c_str(),std::ios_base::binary);
+	f.seekg(0,std::ios_base::end);
+  std::streamsize stream_size = f.tellg();
+	f.seekg(0,std::ios_base::beg);
+	resizeArray(stream_size/4);
+  f.read((char*)data,stream_size);
+  first_sample = 0;
+  real_length = stream_size / 4;
 }
 
 #ifdef USE_FFTW

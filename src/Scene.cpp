@@ -40,6 +40,8 @@
 #define INVALID_FLOAT(x) (std::fpclassify(x)!=FP_NORMAL)
 #endif
 
+#define DO_PHASE_INVERSION
+
 // The exponent for specular reflections
 #define EXP 1000.0f
 #define EXP_INT (EXP + 1.0f)
@@ -136,7 +138,7 @@ void Scene::Render(int band, int sound, float absorbtion_factor,
 
 		float segment_length = 0.0f;
 		Material* mat = 0;
-		BounceType bt;		
+		BounceType bt;
 
 		for( int num_bounces = 0; num_bounces < 1000;
 			num_bounces ++ ) {
@@ -195,8 +197,8 @@ void Scene::Render(int band, int sound, float absorbtion_factor,
 					if ( ls ) {
 
 						// Because triangles in EAR are two-sided we might need
-            // to re-orient the surface normal of the triangle based
-            // on its dot product with the linesegment direction
+						// to re-orient the surface normal of the triangle based
+						// on its dot product with the linesegment direction
 						const gmtl::Vec3f lsdir = gmtl::makeNormal(ls->mDir);
 						bool valid = true;
 
@@ -209,8 +211,8 @@ void Scene::Render(int band, int sound, float absorbtion_factor,
 								sample_intensity_before_bounce;
 
 							// A valid path from the intersection point to the
-              // listener location has been found, now we need to
-              // determine the intensity of the contribution of
+							// listener location has been found, now we need to
+							// determine the intensity of the contribution of
 							// the ray.
 							if ( num_bounces) {
 
@@ -251,6 +253,9 @@ void Scene::Render(int band, int sound, float absorbtion_factor,
 
 							if ( !INVALID_FLOAT(
 								this_sample_intensity) ) {
+#ifdef DO_PHASE_INVERSION
+									if ( num_bounces % 2 ) this_sample_intensity *= -1.0f;
+#endif
 									rec->Record(lsdir,this_sample_intensity,
 										(total_path_length+l)/343.0f,
 										total_path_length+l,band,keyframeID);

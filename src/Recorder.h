@@ -57,7 +57,7 @@ private:
 	float zero;
 	float* data;
 	unsigned int length;
-	void resizeArray(const int l);
+	void resizeArray(const unsigned int l);
 public:
 	unsigned int first_sample;
 	unsigned int real_length;
@@ -87,6 +87,8 @@ public:
 	/// Returns the length of the buffer incorporating a treshold
 	/// that signals values under this treshold to be neglected.
 	unsigned int getLength(float tresh = -1.0f) const;
+	void Write(const std::string& fn) const;
+	void Read(const std::string& fn);
 };
 
 /// This class represents a single impulse response of a listener. The main
