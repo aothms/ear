@@ -1,6 +1,5 @@
 E.A.R: Evaluation of Acoustics using Ray-tracing
 ================================================
-[http://explauralisation.org/ear/](http://explauralisation.org/ear/)
 
 E.A.R is an application that uses Ray-tracing to conceive an impression of the acoustics of a space that has been modeled in 3d. It is a stand-alone application written in C++, but comes with an exporter interface for [Blender](http://www.blender.org). Originally, it was created to aid architects in designing the auditory experience of their buildings, but it has since then evolved into a more all-round tool, which can find its use in filmmaking and special effects as well. E.A.R is free and open source for your enjoyment.
 
@@ -58,10 +57,3 @@ If everything went well, you should be issued the following welcome message
     Usage:
      EAR render <filename>
      EAR calc T60 <filename>
-     
-Using E.A.R
------------
-For directions on how to use ear and some example output, you are kindly directed to the two examples over at the [explauralisation](http://explauralisation.org/) website.
-
-* [Example 1](http://explauralisation.org/example1/)
-* [Example 2](http://explauralisation.org/example2/)
